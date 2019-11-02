@@ -1,0 +1,143 @@
+package com.laioffer.classfour;
+
+
+import java.util.*;
+
+//leetcode 127 word ladder
+//找最短路径 用BFS
+/*
+* 先构造一个map: 从String到List<String>
+*     它的意义：通过查询map可以看出下一步可以变成的String
+*     比如
+*     1 -> {2,3}
+*     2 -> {1,4}
+*     3 -> {1,4}
+*     4 -> {2,3,5}
+*     5 -> {4,6}
+*
+*      BFS:
+*      Queue：去记录以后需要的target
+*      Set: 记录已经处理和将要处理的String；为了避免重复
+*      Size:记录有多少当前有多少个String的情况
+*
+*      1-5
+*      初始：把1放到queue和set中
+*      Queue: 1 把1拿出来，看它和nei有几种可能： 1有的邻居是2，3
+*      Set: 1
+*      size: 1
+*      step 1 is done.
+*
+*      把2，3放入queue和set size = 2有两个String可以选择
+*      Queue: 2，3
+*      Set: 2，3
+*      size: 2
+*
+*      poll 2, 2有两个邻居1和4 由于1已经存在，只放4
+*      poll 3，3有两个邻居1和4 由于1和4已经存在，不用放了
+*      poll出两个后，step 2已经完成
+*
+*      Queue: 4
+*      Set: 4
+*      size: 1
+*      step 3 is done.
+*      poll 4
+*      4有邻居2，3，5；2，3已经存在，把5放入
+*
+*      Queue: 5
+*      Set: 5
+*      size: 1
+*      step 4 is done.
+*
+*      poll 5
+*      5是target,已经完成了4步,这就是我们要找的最短路径
+*
+* */
+public class WorldLadderI {
+    HashMap<String, List<String>> map = new HashMap<>();
+
+    //构建hashmap
+    public void buildMap (List<String> wordList, String beginWord){
+        //遍历word string中的每一个string
+        for(String str: wordList){
+            List<String> nlist = new LinkedList<>();
+            map.put(str, nlist);
+            //跟其他String进行比较
+            for(String nxt:wordList){
+                //如果字符只有一个不同，就把它加到map中
+                if(diff(str, nxt) == 1){
+                    map.get(str).add(nxt);
+                }
+            }
+        }
+        //如果beginWord不在list中也把它加进去
+        if(!map.containsKey(beginWord)){
+            List<String> nlist = new LinkedList<>();
+            map.put(beginWord,nlist);
+            for(String str: wordList){
+                if(diff(beginWord, str) == 1){
+                    map.get(beginWord).add(str);
+                }
+            }
+        }
+        //以上是O(n^2复杂度)
+    }
+    public int diff(String s, String t){
+        int count = 0;
+        for(int i = 0; i < s.length(); i++){
+            if(s.charAt(i) != t.charAt(i)){
+                count++;
+            }
+
+        }
+        return count;
+    }
+
+    //bfs
+    public int ladderLength(String beginWord, String endWord, List<String> worldList){
+        if(beginWord.equals(endWord)) return 0;
+        //建立map,创建hashset和queue
+        buildMap(worldList, beginWord);
+        HashSet<String> doneSet = new HashSet<>();
+        Queue<String> queue = new LinkedList<>();
+
+        //初始化的时候，把begin word放入
+        queue.offer(beginWord);
+        doneSet.add(beginWord);
+        int steps = 1;
+
+        while(queue.size() != 0){
+            //计算当前size有多少中可能性
+            int size = queue.size();
+            for(int i = 0; i< size; i++){
+                //从queue中取出相应的string出来
+                String curr = queue.poll();
+                //如果取出的string就是target word的话，也就是说我们要找5，就return当前的步奏
+                if(curr.equals(endWord)){
+                    return steps;
+                }
+                //if (map.containsKey(curr)){
+                //如果不是的话：做常规的BFS
+                //从map中拿出下一步的list是什么
+                List<String> nxtStrList = map.get(curr);
+                //遍历String，看是否在set中
+                for(String nxtStr: nxtStrList){
+                    if(!doneSet.contains(nxtStr)){
+                        //如果不在set中，添加到queue和set中
+                        if(!doneSet.contains(nxtStr)){
+                            queue.offer(nxtStr);
+                            doneSet.add(nxtStr);
+                        }
+                    }
+               // }
+
+                 }
+                 //做完后每一个step记得更新
+                 steps++;
+            }
+        }
+        return 0;
+    }
+
+}
+
+//time: O(N^2)
