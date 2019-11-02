@@ -1,0 +1,88 @@
+package com.laioffer.classfour;
+
+import java.util.*;
+//leetcode 863 All nodes distance k in binary tree
+public class TreeNode {
+    int val;
+    TreeNode left;
+    TreeNode right;
+
+    TreeNode(int x){
+        val = x;
+    }
+
+    class Solution{
+        Map<TreeNode, List<TreeNode>> map = new HashMap<>();
+        public List<Integer> distance(TreeNode root, TreeNode target, int k) {
+            //构建图 —> 遍历图(bfs)(注意用set保证node没有被重复) -> when k = 0 -> 计算出统计结果
+            List<Integer> result = new ArrayList<>();
+            //corner case
+            if (k < 0) {
+                return result;
+            }
+            //建图:建立当前node和它邻居的关系
+            buildGraph(root, null);
+
+            //确保下面访问的node是没被访问的，否则会有重复情况
+            //set保证排他性；保证放入的距离为k的node
+            Set<TreeNode> visited = new HashSet<>();
+            Queue<TreeNode> q = new LinkedList<>();
+            //因为从target（5）出发，所以把target放进queue
+            q.offer(target);
+            //把target放到set中去
+            visited.add(target);
+            while (!q.isEmpty()) {
+                //保证同一批次处理，k相等的nodes
+                int size = q.size(); //先把queue的size存起来，否则以后就poll乱了
+                //抵达终点:遍历的node就是我想要的，把这些node放到结果中去
+                if (k == 0) {
+                    for (int i = 0; i < size; i++) {
+                        TreeNode cur = q.poll();
+                        result.add(cur.val);
+                    }
+                    //已经得到所有的结果，返回退出了
+                    return result;
+                }
+                //在路上
+
+                for (int i = 0; i < size; i++) {
+                    TreeNode cur = q.poll();
+                    //把邻居拿到
+                    for (TreeNode nei : map.get(cur)) {
+                        if(visited.contains(nei)){
+                            continue;
+                        }
+                        q.offer(nei);
+                        visited.add(nei);
+                    }
+
+                }
+                k--;
+
+            }
+            return result;
+        }
+
+        private void buildGraph(TreeNode node, TreeNode parent){
+            if(node == null) return;
+            //当前的node没有放进map中
+            if(!map.containsKey(node)){
+                //把node和Arralylist构造起来
+                map.put(node, new ArrayList<TreeNode>());
+                if(parent != null){
+                    //把3（parent）和5(当前node放在一起)
+                    map.get(node).add(parent);
+                    map.get(parent).add(node);
+                }
+                //处理左右子树
+                buildGraph(node.left, node);
+                buildGraph(node.right, node);
+
+            }
+
+        }
+    }
+}
+
+//time: 构建graph的时候把所有node都遍历到了 O(n)
+//space: 点+边 V+E O(顶点数量)
