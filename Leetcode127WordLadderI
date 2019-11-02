@@ -93,10 +93,10 @@ public class WorldLadderI {
     }
 
     //bfs
-    public int ladderLength(String beginWord, String endWord, List<String> worldList){
+    public int ladderLength(String beginWord, String endWord, List<String> wordList){
         if(beginWord.equals(endWord)) return 0;
         //建立map,创建hashset和queue
-        buildMap(worldList, beginWord);
+        buildMap(wordList, beginWord);
         HashSet<String> doneSet = new HashSet<>();
         Queue<String> queue = new LinkedList<>();
 
